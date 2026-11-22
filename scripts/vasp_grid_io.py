@@ -12,6 +12,7 @@ Supports:
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from dataclasses import dataclass
@@ -264,6 +265,24 @@ def resolve_spin_alignment(
                     "anchor_moment": round(m_val, 4),
                     "source": outcar_path,
                 }
+
+    # Optional precomputed spin_mapping.json in same folder (when OUTCAR was not archived)
+    spin_map_path = os.path.join(os.path.dirname(data.filepath), "spin_mapping.json")
+    if os.path.isfile(spin_map_path):
+        try:
+            with open(spin_map_path, "r", encoding="utf-8") as f:
+                smap = json.load(f)
+            orig = str(smap.get("majority", {}).get("original_spin", "")).lower()
+            if orig in ("up", "down"):
+                maj_idx = 0 if orig == "up" else 1
+                return {
+                    "is_spin_polarized": True,
+                    "majority_block": maj_idx,
+                    "minority_block": 1 - maj_idx,
+                    "source": spin_map_path,
+                }
+        except Exception:
+            pass
 
     # Fallback: check net difference around anchor or total integral
     if data.field_kind == "chg":
