@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*$py.class
+vasp_slice_out/
+*.egg-info/
+.DS_Store
+Thumbs.db
